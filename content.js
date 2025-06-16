@@ -217,7 +217,7 @@ class ShopeeSellerTracker {
   // 標記賣家
   async markSeller(sellerId, status, sellerName) {
     try {
-      const result = await chrome.storage.local.get(['sellerData']);
+      const result = await chrome.storage.sync.get(['sellerData']);
       const sellerData = result.sellerData || {};
       
       sellerData[sellerId] = {
@@ -227,10 +227,14 @@ class ShopeeSellerTracker {
         note: sellerData[sellerId]?.note || ''
       };
 
-      await chrome.storage.local.set({ sellerData });
+      await chrome.storage.sync.set({ sellerData });
       
-      // 通知 popup 重新載入
-      chrome.runtime.sendMessage({ type: 'sellerDataUpdated' });
+      // 通知 popup 重新載入，忽略錯誤訊息
+      chrome.runtime.sendMessage({ type: 'sellerDataUpdated' }, () => {
+        if (chrome.runtime.lastError) {
+          // 忽略錯誤，不顯示
+        }
+      });
       
       this.showNotification(`已標記 ${sellerName} 為 ${status === 'good' ? '好評' : '避開'}`);
       this.updateSellerStatus();
@@ -244,7 +248,7 @@ class ShopeeSellerTracker {
     const note = prompt('請輸入對此賣家的備註:');
     if (note !== null) {
       try {
-        const result = await chrome.storage.local.get(['sellerData']);
+        const result = await chrome.storage.sync.get(['sellerData']);
         const sellerData = result.sellerData || {};
         
         if (!sellerData[sellerId]) {
@@ -256,7 +260,7 @@ class ShopeeSellerTracker {
         }
         
         sellerData[sellerId].note = note;
-        await chrome.storage.local.set({ sellerData });
+        await chrome.storage.sync.set({ sellerData });
         
         this.showNotification(`已為 ${sellerName} 添加備註`);
       } catch (error) {
@@ -268,7 +272,7 @@ class ShopeeSellerTracker {
   // 檢查並顯示賣家狀態
   async checkSellerStatus() {
     try {
-      const result = await chrome.storage.local.get(['sellerData']);
+      const result = await chrome.storage.sync.get(['sellerData']);
       const sellerData = result.sellerData || {};
       
       const sellerInfo = this.getSellerInfo();  // 移除await因為不是async函數

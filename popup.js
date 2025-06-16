@@ -6,7 +6,7 @@ class PopupManager {
     
     // 監聽 storage 變化，自動刷新
     chrome.storage.onChanged.addListener((changes, area) => {
-      if (area === 'local' && changes.sellerData) {
+      if (area === 'sync' && changes.sellerData) {
         this.sellerData = changes.sellerData.newValue || {};
         this.renderStats();
         this.renderSellerList();
@@ -24,7 +24,7 @@ class PopupManager {
   // 載入賣家數據
   async loadData() {
     try {
-      const result = await chrome.storage.local.get(['sellerData']);
+      const result = await chrome.storage.sync.get(['sellerData']);
       this.sellerData = result.sellerData || {};
     } catch (error) {
       console.error('載入數據失敗:', error);
@@ -117,7 +117,7 @@ class PopupManager {
   async clearAllData() {
     if (confirm('確定要清除所有賣家記錄嗎？此操作無法復原。')) {
       try {
-        await chrome.storage.local.remove(['sellerData']);
+        await chrome.storage.sync.remove(['sellerData']);
         this.sellerData = {};
         this.renderStats();
         this.renderSellerList();
