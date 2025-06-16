@@ -59,7 +59,7 @@ class PopupManager {
     sellers.sort((a, b) => b[1].timestamp - a[1].timestamp);
     
     listContainer.innerHTML = sellers.map(([sellerId, data]) => `
-      <div class="seller-item">
+      <div class="seller-item" data-seller-id="${sellerId}">
         <div class="seller-name" title="${data.name}${data.note ? '\n備註: ' + data.note : ''}">
           ${data.name}
           ${data.note ? '📝' : ''}
@@ -68,7 +68,33 @@ class PopupManager {
           ${this.getStatusText(data.status)}
         </div>
       </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <button class="seller-tracker-btn good" data-action="good" data-seller-id="${sellerId}">👍 好評</button>
+        <button class="seller-tracker-btn bad" data-action="bad" data-seller-id="${sellerId}">👎 避開</button>
+        <button class="seller-tracker-btn note" data-action="note" data-seller-id="${sellerId}">📝 備註</button>
+      </div>
+      <div style="font-size:11px; color:#ffd; margin:2px 0 8px 0; padding-left:4px;">
+        ${data.note ? `📝 備註：${data.note}<br>` : ''}
+        <span style="opacity:0.7;">標記時間：${data.timestamp ? new Date(data.timestamp).toLocaleString() : ''}</span>
+      </div>
     `).join('');
+
+    // 綁定按鈕事件
+    listContainer.querySelectorAll('.seller-tracker-btn').forEach(btn => {
+      btn.onclick = (e) => {
+        const sellerId = btn.getAttribute('data-seller-id');
+        const action = btn.getAttribute('data-action');
+        const seller = this.sellerData[sellerId];
+        if (!seller) return;
+        if (action === 'good') {
+          this.markSeller(sellerId, 'good', seller.name);
+        } else if (action === 'bad') {
+          this.markSeller(sellerId, 'bad', seller.name);
+        } else if (action === 'note') {
+          this.addNote(sellerId, seller.name);
+        }
+      };
+    });
   }
 
   // 獲取狀態文字
@@ -152,6 +178,52 @@ class PopupManager {
     setTimeout(() => {
       document.body.removeChild(msgDiv);
     }, 2000);
+  }
+
+  // 新增 markSeller 及 addNote 方法到 PopupManager
+  async markSeller(sellerId, status, sellerName) {
+    try {
+      const result = await chrome.storage.sync.get(['sellerData']);
+      const sellerData = result.sellerData || {};
+      sellerData[sellerId] = {
+        name: sellerName,
+        status: status,
+        timestamp: Date.now(),
+        note: sellerData[sellerId]?.note || ''
+      };
+      await chrome.storage.sync.set({ sellerData });
+      await this.loadData();
+      this.renderStats();
+      this.renderSellerList();
+      this.showMessage(`已標記 ${sellerName} 為 ${status === 'good' ? '好評' : '避開'}`);
+    } catch (error) {
+      this.showMessage('標記失敗');
+    }
+  }
+
+  async addNote(sellerId, sellerName) {
+    const note = prompt('請輸入對此賣家的備註:');
+    if (note !== null) {
+      try {
+        const result = await chrome.storage.sync.get(['sellerData']);
+        const sellerData = result.sellerData || {};
+        if (!sellerData[sellerId]) {
+          sellerData[sellerId] = {
+            name: sellerName,
+            status: 'neutral',
+            timestamp: Date.now()
+          };
+        }
+        sellerData[sellerId].note = note;
+        await chrome.storage.sync.set({ sellerData });
+        await this.loadData();
+        this.renderStats();
+        this.renderSellerList();
+        this.showMessage(`已為 ${sellerName} 添加備註`);
+      } catch (error) {
+        this.showMessage('添加備註失敗');
+      }
+    }
   }
 }
 

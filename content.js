@@ -44,6 +44,22 @@ class ShopeeSellerTracker {
       }
     }
     console.log('❌ 未找到購物車賣家資訊');
+
+    // 商品頁面
+    const sellerNameDiv = document.querySelector('.fV3TIn');
+    const sellerLink = document.querySelector('a.lG5Xxv, a.Z6yFUs');
+    if (sellerNameDiv && sellerLink) {
+      const sellerName = sellerNameDiv.textContent.trim();
+      const href = sellerLink.getAttribute('href');
+      const sellerId = this.extractSellerIdFromUrl(href);
+      return {
+        name: sellerName,
+        id: sellerId,
+        url: href,
+        element: sellerNameDiv
+      };
+    }
+
     return null;
   }
 
@@ -64,7 +80,7 @@ class ShopeeSellerTracker {
           this.addButtonToSearchItem(seller);
         }
       });
-    } else if (sellerInfo && sellerInfo.id) {
+    } else if (sellerInfo && sellerInfo.element) {
       // 商品頁面
       this.addButtonToProductPage(sellerInfo);
     }
@@ -119,69 +135,20 @@ class ShopeeSellerTracker {
 
   // 在商品頁面添加按鈕
   addButtonToProductPage(seller) {
-    if (document.querySelector('.seller-tracker-product-btn')) return;
+    // 避免重複插入
+    if (seller.element.querySelector('.seller-tracker-btn')) return;
 
     const btnContainer = document.createElement('div');
-    btnContainer.className = 'seller-tracker-product-container';
+    btnContainer.className = 'seller-tracker-container';
     btnContainer.innerHTML = `
-      <div class="seller-tracker-section">
-        <h4>賣家評價記錄</h4>
-        <button class="seller-tracker-btn good" data-seller-id="${seller.id}" data-action="good">
-          👍 標記為好賣家
-        </button>
-        <button class="seller-tracker-btn bad" data-seller-id="${seller.id}" data-action="bad">
-          👎 標記為避開
-        </button>
-        <button class="seller-tracker-btn note" data-seller-id="${seller.id}" data-action="note">
-          📝 添加備註
-        </button>
-      </div>
+      <button class="seller-tracker-btn good" data-seller-id="${seller.id}" data-action="good">👍 好評</button>
+      <button class="seller-tracker-btn bad" data-seller-id="${seller.id}" data-action="bad">👎 避開</button>
+      <button class="seller-tracker-btn note" data-seller-id="${seller.id}" data-action="note">📝 備註</button>
     `;
 
-    // 多個可能的插入位置
-    const insertTargets = [
-      '[data-sqe="section_seller"]',
-      '.seller-info',
-      '.shop-info',
-      '.pdp-seller-info',
-      '.product-seller',
-      '.seller-container',
-      // 如果找不到特定位置，嘗試在主要內容區域
-      '.page-product__detail',
-      '.product-detail',
-      '.pdp-product-detail',
-      'main',
-      '#main'
-    ];
-
-    let inserted = false;
-    for (const selector of insertTargets) {
-      const target = document.querySelector(selector);
-      if (target) {
-        target.appendChild(btnContainer);
-        console.log(`✅ 按鈕已插入到: ${selector}`);
-        inserted = true;
-        break;
-      }
-    }
-
-    // 如果都找不到，就插入到body的開頭作為浮動元素
-    if (!inserted) {
-      btnContainer.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        z-index: 10000;
-        background: white;
-        border: 2px solid #007bff;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      `;
-      document.body.appendChild(btnContainer);
-      console.log('✅ 按鈕已插入為浮動元素');
-    }
-
     this.attachButtonEvents(btnContainer, seller);
+
+    seller.element.appendChild(btnContainer);
   }
 
   // 綁定按鈕事件
@@ -299,11 +266,14 @@ class ShopeeSellerTracker {
       if (sellerInfo.id && sellerData[sellerInfo.id]) {
         // 顯示全頁警告
         this.showSellerWarning(sellerData[sellerInfo.id]);
-        
         // 在商家資訊區域顯示標記
         const shopSection = document.querySelector('.page-product__shop');
         if (shopSection) {
           this.highlightSeller(shopSection, sellerData[sellerInfo.id]);
+        }
+        // 在賣家名稱區塊顯示標記（商品頁）
+        if (sellerInfo.element) {
+          this.highlightSeller(sellerInfo.element, sellerData[sellerInfo.id]);
         }
       }
     } catch (error) {
@@ -323,7 +293,30 @@ class ShopeeSellerTracker {
     const oldBadge = element.querySelector('.seller-good-badge');
     if (oldBadge) oldBadge.remove();
 
-    // 嘗試找到賣家名稱節點
+    // 商品頁面賣家名稱區塊（.fV3TIn）直接在後方插入標記
+    if (element.classList.contains('fV3TIn')) {
+      // 移除同層的舊標記
+      let next = element.nextElementSibling;
+      while (next && (next.classList.contains('seller-warning') || next.classList.contains('seller-good-badge'))) {
+        const toRemove = next;
+        next = next.nextElementSibling;
+        toRemove.remove();
+      }
+      if (data.status === 'bad') {
+        const warning = document.createElement('span');
+        warning.className = 'seller-warning';
+        warning.innerHTML = `⚠️ 已標記為避開 ${data.note ? `(${data.note})` : ''}`;
+        element.after(warning);
+      } else if (data.status === 'good') {
+        const badge = document.createElement('span');
+        badge.className = 'seller-good-badge';
+        badge.innerHTML = `✅ 好評賣家`;
+        element.after(badge);
+      }
+      return;
+    }
+
+    // 其他情境維持原本行為
     const nameNode = element.querySelector('span, .seller-name, .shop-name, .fV3TIn');
     let insertTarget = nameNode || element;
 
