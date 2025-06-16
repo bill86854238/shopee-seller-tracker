@@ -17,34 +17,37 @@ class ShopeeSellerTracker {
     this.observePageChanges();
   }
 
-  // 獲取當前賣家資訊（只針對購物車頁面）
+  // 獲取當前賣家資訊（根據網址判斷頁面類型）
   getSellerInfo() {
-    console.log('🔍 開始搜尋購物車賣家資訊...');
-    const cartSellerLinks = document.querySelectorAll('a.QcqMX5');
-    if (cartSellerLinks.length > 0) {
-      const sellers = Array.from(cartSellerLinks).map(link => {
-        const name = link.querySelector('span')?.textContent?.trim() || link.textContent.trim();
-        const href = link.getAttribute('href') || '';
-        const urlParams = new URLSearchParams(href.split('?')[1]);
-        const itemId = urlParams.get('itemId') || '';
-        const sellerId = href.split('?')[0].replace('/', '');
-        // 取最外層的 cart-item 或 li 元素
-        const element = link.closest('[class*="cart-item"], li') || link.parentElement;
-        return {
-          name,
-          id: sellerId,
-          url: href,
-          itemId,
-          element
-        };
-      }).filter(seller => seller.id && seller.name && seller.itemId && seller.element);
-      if (sellers.length > 0) {
-        console.log('✅ 找到購物車賣家:', sellers);
-        return sellers;
+    const isCartPage = window.location.pathname === '/cart/';
+    if (isCartPage) {
+      console.log('🔍 開始搜尋購物車賣家資訊...');
+      const cartSellerLinks = document.querySelectorAll('a.QcqMX5');
+      if (cartSellerLinks.length > 0) {
+        const sellers = Array.from(cartSellerLinks).map(link => {
+          const name = link.querySelector('span')?.textContent?.trim() || link.textContent.trim();
+          const href = link.getAttribute('href') || '';
+          const urlParams = new URLSearchParams(href.split('?')[1]);
+          const itemId = urlParams.get('itemId') || '';
+          const sellerId = href.split('?')[0].replace('/', '');
+          // 取最外層的 cart-item 或 li 元素
+          const element = link.closest('[class*="cart-item"], li') || link.parentElement;
+          return {
+            name,
+            id: sellerId,
+            url: href,
+            itemId,
+            element
+          };
+        }).filter(seller => seller.id && seller.name && seller.itemId && seller.element);
+        if (sellers.length > 0) {
+          console.log('✅ 找到購物車賣家:', sellers);
+          return sellers;
+        }
       }
+      console.log('❌ 未找到購物車賣家資訊');
+      return null;
     }
-    console.log('❌ 未找到購物車賣家資訊');
-
     // 商品頁面
     const sellerNameDiv = document.querySelector('.fV3TIn');
     const sellerLink = document.querySelector('a.lG5Xxv, a.Z6yFUs');
@@ -59,14 +62,18 @@ class ShopeeSellerTracker {
         element: sellerNameDiv
       };
     }
-
     return null;
   }
 
   // 從URL提取賣家ID
   extractSellerIdFromUrl(url) {
-    const match = url.match(/shop\/(\d+)/);
-    return match ? match[1] : null;
+    // 先抓 /shop/123456
+    let match = url.match(/shop\/(\d+)/);
+    if (match) return match[1];
+    // 再抓 /賣家帳號
+    match = url.match(/^\/([^/?#]+)/);
+    if (match) return match[1];
+    return null;
   }
 
   // 添加賣家操作按鈕
@@ -336,6 +343,9 @@ class ShopeeSellerTracker {
   // 顯示賣家警告
   showSellerWarning(data) {
     if (data.status === 'bad') {
+      // 先移除舊的警告框
+      const oldWarning = document.querySelector('.seller-page-warning');
+      if (oldWarning) oldWarning.remove();
       const warning = document.createElement('div');
       warning.className = 'seller-page-warning';
       warning.innerHTML = `
@@ -345,8 +355,13 @@ class ShopeeSellerTracker {
           <br>標記時間：${new Date(data.timestamp).toLocaleString()}
         </div>
       `;
-      
       document.body.insertBefore(warning, document.body.firstChild);
+      // 5 秒後自動淡出並移除
+      setTimeout(() => {
+        warning.style.transition = 'opacity 0.8s';
+        warning.style.opacity = '0';
+        setTimeout(() => warning.remove(), 800);
+      }, 5000);
     }
   }
 
@@ -365,11 +380,15 @@ class ShopeeSellerTracker {
 
   // 監聽頁面變化
   observePageChanges() {
+    const isCartPage = window.location.pathname === '/cart/';
+    if (!isCartPage) return; // 只在購物車頁啟用 observer
+    let debounceTimer = null;
     const observer = new MutationObserver(() => {
-      setTimeout(() => {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
         this.addSellerButtons();
         this.checkSellerStatus();
-      }, 1000);
+      }, 3000); // 3 秒
     });
 
     observer.observe(document.body, {
