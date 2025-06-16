@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>蝦皮賣家記錄器</title>
+  <style>
+    body {
+      width: 350px;
+      padding: 20px;
+      font-family: 'Microsoft JhengHei', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      margin: 0;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    .seller-list {
+      max-height: 200px;
+      overflow-y: auto;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 15px;
+    }
+
+    .seller-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px;
+      margin-bottom: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      font-size: 12px;
+    }
+
+    .seller-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .seller-name {
+      flex: 1;
+      margin-right: 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .seller-status {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .status-good {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .status-bad {
+      background: #f44336;
+      color: white;
+    }
+
+    .status-neutral {
+      background: #FF9800;
+      color: white;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-export {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .btn-clear {
+      background: #f44336;
+      color: white;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      opacity: 0.8;
+    }
+
+    .empty-state img {
+      width: 50px;
+      height: 50px;
+      margin-bottom: 10px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛍️ 蝦皮賣家記錄器</h1>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-number" id="goodCount">0</div>
+      <div class="stat-label">好評賣家</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-number" id="badCount">0</div>
+      <div class="stat-label">避開賣家</div>
+    </div>
+  </div>
+
+  <div class="seller-list" id="sellerList">
+    <div class="empty-state" id="emptyState">
+      <div>📝</div>
+      <div>尚未記錄任何賣家</div>
+      <div style="font-size: 10px; margin-top: 5px;">在蝦皮商品頁面使用按鈕標記賣家</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-export" id="exportBtn">
+      📤 匯出數據
+    </button>
+    <button class="btn btn-clear" id="clearBtn">
+      🗑️ 清除全部
+    </button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

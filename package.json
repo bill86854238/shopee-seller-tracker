@@ -1,0 +1,11 @@
+{
+  "name": "shopee-seller-tracker",
+  "version": "1.0.0",
+  "dependencies": {
+    "puppeteer-core": "^21.5.0",
+    "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "@types/puppeteer-core": "^7.0.4"
+  }
+}

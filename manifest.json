@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "蝦皮賣家記錄器",
+  "version": "1.0",
+  "description": "記錄蝦皮賣家的購買體驗，避免重複踩雷",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "*://*.shopee.tw/*",
+    "*://*.shopee.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.shopee.tw/*",
+        "*://*.shopee.com/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "蝦皮賣家記錄器"
+  }
+}

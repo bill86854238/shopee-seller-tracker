@@ -1,0 +1,196 @@
+/* 蝦皮賣家記錄器樣式 */
+
+/* 按鈕容器 */
+.seller-tracker-container {
+  display: flex;
+  gap: 5px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.seller-tracker-product-container {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+}
+
+.seller-tracker-section h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* 按鈕樣式 */
+.seller-tracker-btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.seller-tracker-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.seller-tracker-btn.good {
+  background: #28a745;
+  color: white;
+}
+
+.seller-tracker-btn.good:hover {
+  background: #218838;
+}
+
+.seller-tracker-btn.bad {
+  background: #dc3545;
+  color: white;
+}
+
+.seller-tracker-btn.bad:hover {
+  background: #c82333;
+}
+
+.seller-tracker-btn.note {
+  background: #007bff;
+  color: white;
+}
+
+.seller-tracker-btn.note:hover {
+  background: #0056b3;
+}
+
+/* 賣家狀態高亮 */
+.seller-status-good {
+  border: 2px solid #28a745 !important;
+  background: rgba(40, 167, 69, 0.1) !important;
+}
+
+.seller-status-bad {
+  border: 2px solid #dc3545 !important;
+  background: rgba(220, 53, 69, 0.1) !important;
+}
+
+/* 警告標籤 */
+.seller-warning {
+  background: #dc3545;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 5px;
+  display: inline-block;
+}
+
+.seller-good-badge {
+  background: #28a745;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  margin-top: 5px;
+  display: inline-block;
+}
+
+/* 商品頁面警告 */
+.seller-page-warning {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #dc3545;
+  color: white;
+  z-index: 10000;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.warning-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 15px 20px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* 通知消息 */
+.seller-tracker-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #333;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  z-index: 10000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .seller-tracker-container {
+    flex-direction: column;
+  }
+  
+  .seller-tracker-btn {
+    width: 100%;
+    margin-bottom: 2px;
+  }
+  
+  .seller-page-warning {
+    position: relative;
+  }
+  
+  .warning-content {
+    padding: 10px 15px;
+    font-size: 13px;
+  }
+}
+
+/* 深色模式適配 */
+@media (prefers-color-scheme: dark) {
+  .seller-tracker-product-container {
+    background: #2d3436;
+    border-color: #636e72;
+  }
+  
+  .seller-tracker-section h4 {
+    color: #ddd;
+  }
+}
+
+/* 蝦皮特定樣式適配 */
+.shopee-search-item-result__item .seller-tracker-container {
+  margin-top: 5px;
+}
+
+.shopee-search-item-result__item .seller-tracker-btn {
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+/* 商品卡片內的按鈕 */
+[data-sqe="item"] .seller-tracker-container {
+  position:
