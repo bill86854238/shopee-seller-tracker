@@ -155,7 +155,25 @@ class PopupManager {
   }
 }
 
+// 監聽 content script 傳來的 sellerDataUpdated 訊息
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg && msg.type === 'sellerDataUpdated') {
+    if (window.popupManagerInstance) {
+      window.popupManagerInstance.loadData().then(() => {
+        window.popupManagerInstance.renderStats();
+        window.popupManagerInstance.renderSellerList();
+      });
+    }
+  }
+});
+
 // 初始化彈出窗口
-document.addEventListener('DOMContentLoaded', () => {
-  new PopupManager();
+document.addEventListener('DOMContentLoaded', async () => {
+  if (window.popupManagerInstance) {
+    await window.popupManagerInstance.loadData();
+    window.popupManagerInstance.renderStats();
+    window.popupManagerInstance.renderSellerList();
+  } else {
+    window.popupManagerInstance = new PopupManager();
+  }
 });

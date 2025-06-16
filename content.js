@@ -229,6 +229,9 @@ class ShopeeSellerTracker {
 
       await chrome.storage.local.set({ sellerData });
       
+      // 通知 popup 重新載入
+      chrome.runtime.sendMessage({ type: 'sellerDataUpdated' });
+      
       this.showNotification(`已標記 ${sellerName} 為 ${status === 'good' ? '好評' : '避開'}`);
       this.updateSellerStatus();
     } catch (error) {
